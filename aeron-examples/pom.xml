@@ -6,28 +6,32 @@
         <artifactId>monorepo</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>chronicle</artifactId>
-    <name>Archetype - chronicle</name>
+    <artifactId>aeron-examples</artifactId>
+    <name>Archetype - aeron</name>
     <url>http://maven.apache.org</url>
 
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/io.aeron/aeron-all -->
         <dependency>
-            <groupId>net.openhft</groupId>
-            <artifactId>chronicle-queue</artifactId>
-            <version>5.24ea19</version>
+            <groupId>io.aeron</groupId>
+            <artifactId>aeron-all</artifactId>
+            <version>1.47.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.example</groupId>
-            <artifactId>framework</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
+
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
                 <configuration>
                     <source>17</source>
                     <target>17</target>

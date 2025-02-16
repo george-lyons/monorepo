@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   package="com.market.data.sbe"
+                   id="1"
+                   version="1"
+                   semanticVersion="1.0"
+                   description="Market Data Messages">
+
+    <types>
+        <composite name="messageHeader" description="Message header">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="templateId" primitiveType="uint16"/>
+            <type name="schemaId" primitiveType="uint16"/>
+            <type name="version" primitiveType="uint16"/>
+        </composite>
+        <composite name="groupSizeEncoding">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="numInGroup" primitiveType="uint16"/>
+        </composite>
+        <composite name="decimal64">
+            <type name="mantissa" primitiveType="int64"/>
+            <type name="exponent" primitiveType="int8"/>
+        </composite>
+        <type name="timestampNanos" primitiveType="uint64"/>
+        <type name="symbol" length="20" primitiveType="char" characterEncoding="ASCII"/>
+    </types>
+
+    <sbe:message name="QuoteMessage" id="1" description="Market data quote">
+        <field name="timestamp" id="1" type="timestampNanos"/>
+        <field name="symbol" id="2" type="symbol"/>
+        <field name="sequenceNumber" id="3" type="uint64"/>
+        <field name="exchangeId" id="4" type="uint8" description="1=Binance, 2=Kraken, etc"/>
+        <group name="bidLevels" id="5" dimensionType="groupSizeEncoding">
+            <field name="price" id="6" type="decimal64"/>
+            <field name="quantity" id="7" type="decimal64"/>
+        </group>
+        <group name="askLevels" id="8" dimensionType="groupSizeEncoding">
+            <field name="price" id="9" type="decimal64"/>
+            <field name="quantity" id="10" type="decimal64"/>
+        </group>
+    </sbe:message>
+
+</sbe:messageSchema> 

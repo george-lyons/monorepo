@@ -1,5 +1,6 @@
 package com.netty;
 
+import com.market.data.Translator;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -19,14 +20,20 @@ public class NettyWebSocketClient {
     private final String name;
     private final String url;
     private final EventLoopGroup group;
+    private final Bootstrap bootstrap;
     private final HttpHeaders headers;
+
+    private final Translator translator;
     private Channel channel;
 
-    public NettyWebSocketClient(String name, String url, EventLoopGroup group, HttpHeaders headers) {
+
+    public NettyWebSocketClient(String name, String url, EventLoopGroup group, Bootstrap bootstrap, HttpHeaders headers, Translator translator) {
         this.name = name;
         this.url = url;
         this.group = group;
+        this.bootstrap = bootstrap;
         this.headers = headers;
+        this.translator = translator;
     }
 
     public void connect() {
@@ -38,10 +45,10 @@ public class NettyWebSocketClient {
             logger.info("[{}] Connecting to WebSocket: {}", name, url);
             logger.info("[{}] Host: {}, Port: {}", name, host, port);
 
-            Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(group)
                     .channel(NioSocketChannel.class)
-                    .handler(new WebSocketInitializer(uri, this));
+                    .handler(new WebSocketInitializer(uri, this, translator));
+
 
             logger.info("[{}] 🔄 Initiating connection...", name);
             ChannelFuture future = bootstrap.connect(host, port);
@@ -73,7 +80,6 @@ public class NettyWebSocketClient {
 
     public void sendMessage(String message) {
         if (channel != null && channel.isActive()) {
-            //reusable object no need to allocate
             channel.writeAndFlush(new TextWebSocketFrame(message));
         }
     }

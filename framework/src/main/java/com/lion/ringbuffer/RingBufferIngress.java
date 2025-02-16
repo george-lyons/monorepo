@@ -1,7 +1,7 @@
 package com.lion.ringbuffer;
 
 import com.lion.message.MsgType;
-import com.lion.message.publisher.MessagePublisher;
+import com.lion.message.publisher.IpcPublisher;
 import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
 import org.agrona.MutableDirectBuffer;
@@ -17,16 +17,16 @@ import java.nio.ByteBuffer;
 import java.util.EnumMap;
 
 
-public class RingBufferIngress implements Agent, MessageHandler, MessagePublisher {
+public class RingBufferIngress implements Agent, MessageHandler, IpcPublisher {
    //Uses ReusableParameterizedMessageFactory to avoid creating temporary String objects.
     private static final Logger logger = LogManager.getLogger(RingBufferIngress.class, ReusableMessageFactory.INSTANCE);
 
     private RingBuffer ringBuffer;
     private final StringBuilder logAppender = new StringBuilder();
-    private final EnumMap<MsgType,MessagePublisher> mapToMessagePublisher;
+    private final EnumMap<MsgType, IpcPublisher> mapToMessagePublisher;
 
 
-    public RingBufferIngress(IdleStrategy idleStrategy, int ringBufferSize, EnumMap<MsgType,MessagePublisher> mapToMessagePublisher ) {
+    public RingBufferIngress(IdleStrategy idleStrategy, int ringBufferSize, EnumMap<MsgType, IpcPublisher> mapToMessagePublisher ) {
         final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ringBufferSize + RingBufferDescriptor.TRAILER_LENGTH);
         final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(byteBuffer);
         this.mapToMessagePublisher = mapToMessagePublisher;
@@ -60,7 +60,7 @@ public class RingBufferIngress implements Agent, MessageHandler, MessagePublishe
     @Override
     public void onMessage(int messageType, MutableDirectBuffer mutableDirectBuffer, int offset, int length) {
         final MsgType msgType = MsgType.fromId(messageType);
-        final MessagePublisher publisher = mapToMessagePublisher.get(msgType);
+        final IpcPublisher publisher = mapToMessagePublisher.get(msgType);
 
         if(publisher != null) {
             publisher.publish(messageType, mutableDirectBuffer, offset, length);

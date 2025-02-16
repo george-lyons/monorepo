@@ -1,5 +1,7 @@
 package com.netty;
 
+import com.market.data.BinanceTobToSbeTranslator;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -26,10 +28,12 @@ public class WebSocketManager {
                 "Binance",
                 BINANCE_TOB_BTC,
                 group,
+                new Bootstrap(),
                 new DefaultHttpHeaders()
                     .add(HttpHeaderNames.HOST, "stream.binance.com")
                     .add(HttpHeaderNames.ORIGIN, "https://stream.binance.com")
-                    .add(HttpHeaderNames.USER_AGENT, "netty-websocket-client")
+                    .add(HttpHeaderNames.USER_AGENT, "netty-websocket-client"),
+                new BinanceTobToSbeTranslator(4096)
         );
         binanceClient.connect();
 
