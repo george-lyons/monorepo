@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="logPattern">%d{HH:mm:ss.SSS} [%t] %-5level - %msg%n</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- Async Console Logging -->
+        <AsyncConsole name="ConsoleAppender">
+            <PatternLayout pattern="${logPattern}"/>
+        </AsyncConsole>
+
+        <!-- Async File Logger (Zero-GC) -->
+        <AsyncFile name="TradingFileAppender" fileName="logs/trading.log">
+            <PatternLayout pattern="${logPattern}"/>
+        </AsyncFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="TradingFileAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>
