@@ -1,4 +1,4 @@
-package com.binance;
+package com.netty;
 
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
@@ -11,13 +11,12 @@ import org.apache.logging.log4j.Logger;
 
 import java.net.URI;
 
-public class BinanceWebSocketInitializer extends ChannelInitializer<SocketChannel> {
-    private static final Logger logger = LogManager.getLogger(BinanceWebSocketInitializer.class);
+public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
+    private static final Logger logger = LogManager.getLogger(WebSocketInitializer.class);
     private final URI uri;
-    private final BinanceNettyWebSocketClient client;
-    private static final String ORIGIN = "https://stream.binance.com";
+    private final NettyWebSocketClient client;
 
-    public BinanceWebSocketInitializer(URI uri, BinanceNettyWebSocketClient client) {
+    public WebSocketInitializer(URI uri, NettyWebSocketClient client) {
         this.uri = uri;
         this.client = client;
     }
@@ -43,16 +42,11 @@ public class BinanceWebSocketInitializer extends ChannelInitializer<SocketChanne
             WebSocketVersion.V13,
             null,  // no subprotocol
             true,  // allow extensions
-            new DefaultHttpHeaders()
-                .add(HttpHeaderNames.HOST, uri.getHost())
-                .add(HttpHeaderNames.ORIGIN, ORIGIN)
-                .add(HttpHeaderNames.PRAGMA, "no-cache")
-                .add(HttpHeaderNames.CACHE_CONTROL, "no-cache")
-                .add(HttpHeaderNames.USER_AGENT, "Mozilla/5.0")
+            client.getHeaders()  // Use the headers from the client
         );
 
         logger.debug("Adding WebSocket protocol handler and Binance handler to pipeline");
         pipeline.addLast(new WebSocketClientProtocolHandler(handshaker));
-        pipeline.addLast(new BinanceWebSocketHandler(client));
+        pipeline.addLast(new WebSocketHandler(client));
     }
 }
