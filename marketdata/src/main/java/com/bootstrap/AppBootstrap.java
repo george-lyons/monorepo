@@ -24,6 +24,7 @@ public class AppBootstrap {
         final Clock clock = new SystemClock();
 
         final NettyWebSocketClient binanceClient = NettyWebSocketConfiguration.builder()
+                .id(1)
                 .name("Binance")
                 .url(websocketUrl)
                 .group(group)

@@ -20,13 +20,15 @@ public class NettyWebSocketClient {
     private final Bootstrap bootstrap;
     private final HttpHeaders headers;
 
+    private final int id;
     private Channel channel;
 
     private SimpleChannelInboundHandler<WebSocketFrame> webSocketHandler;
 
-    public NettyWebSocketClient(String name, String url, EventLoopGroup group, Bootstrap bootstrap, HttpHeaders headers, SimpleChannelInboundHandler<WebSocketFrame> webSocketHandler) {
+    public NettyWebSocketClient(String name, String url, int id, EventLoopGroup group, Bootstrap bootstrap, HttpHeaders headers, SimpleChannelInboundHandler<WebSocketFrame> webSocketHandler) {
         this.name = name;
         this.url = url;
+        this.id = id;
         this.group = group;
         this.bootstrap = bootstrap;
         this.headers = headers;

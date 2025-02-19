@@ -61,6 +61,11 @@ public class NettyWebSocketConfiguration {
         private HttpHeaders headers = new DefaultHttpHeaders();
         private WebSocketHandler handler;
 
+        public Builder id(int id) {
+            this.id = id;
+            return this;
+        }
+
         public Builder name(String name) {
             this.name = name;
             return this;
@@ -92,7 +97,7 @@ public class NettyWebSocketConfiguration {
         }
 
         public NettyWebSocketClient build() {
-            return new NettyWebSocketClient(name, url, group, bootstrap, headers, handler);
+            return new NettyWebSocketClient(name, url, id, group, bootstrap, headers, handler);
         }
 
     }

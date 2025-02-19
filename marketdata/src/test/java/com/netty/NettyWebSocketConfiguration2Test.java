@@ -48,7 +48,7 @@ class NettyWebSocketConfiguration2Test {
         when(channel.isActive()).thenReturn(true);
 
         // Inject mocked Bootstrap into the client
-        client = new NettyWebSocketClient(name, url, eventLoopGroup, bootstrap, headers, new WebSocketHandler(new SystemClock(), new Translator() {
+        client = new NettyWebSocketClient(name, url, 1, eventLoopGroup, bootstrap, headers, new WebSocketHandler(new SystemClock(), new Translator() {
             @Override
             public DirectBuffer translate(DirectBuffer sourceBuffer, int offset, int length, long receivedNanoTime) {
                 return null;

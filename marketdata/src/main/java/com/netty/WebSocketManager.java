@@ -32,10 +32,12 @@ public class WebSocketManager {
         });
 
         // Wait indefinitely
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Shutting down WebSocket clients...");
-            clients.forEach(NettyWebSocketClient::shutdown);
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+    }
+
+    public void stop() {
+        logger.info("Shutting down WebSocket clients...");
+        clients.forEach(NettyWebSocketClient::shutdown);
     }
 
     public static void main(String[] args) {
