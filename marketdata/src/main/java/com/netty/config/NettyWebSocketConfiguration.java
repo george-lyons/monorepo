@@ -1,4 +1,4 @@
-package com.netty.client;
+package com.netty.config;
 
 import com.netty.NettyWebSocketClient;
 import com.netty.handler.WebSocketHandler;

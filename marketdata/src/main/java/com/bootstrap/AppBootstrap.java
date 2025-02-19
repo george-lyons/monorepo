@@ -6,7 +6,7 @@ import com.lion.config.ConfigLoader;
 import com.market.data.BinanceTobToSbeTranslator;
 import com.netty.NettyWebSocketClient;
 import com.netty.WebSocketManager;
-import com.netty.client.NettyWebSocketConfiguration;
+import com.netty.config.NettyWebSocketConfiguration;
 import com.netty.handler.WebSocketHandler;
 import com.request.RequestBuilder;
 import io.netty.bootstrap.Bootstrap;
