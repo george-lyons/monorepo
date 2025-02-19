@@ -1,0 +1,28 @@
+version: '3'
+services:
+  prometheus-metrics-server:
+    image: openjdk:11-jre-slim
+    container_name: prometheus-metrics-server
+    ports:
+      - "8081:8081"  # Exposing port for Prometheus scraping
+    volumes:
+      - ./PrometheusMetricsServer.jar:/app/PrometheusMetricsServer.jar
+    networks:
+      - prometheus-net
+    command: ["java", "-jar", "/app/PrometheusMetricsServer.jar"]
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus2
+    ports:
+      - "9090:9090"  # Exposing Prometheus web interface
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml  # Mount the prometheus.yml
+    networks:
+      - prometheus-net
+    depends_on:
+      - prometheus-metrics-server
+
+networks:
+  prometheus-net:
+    driver: bridge

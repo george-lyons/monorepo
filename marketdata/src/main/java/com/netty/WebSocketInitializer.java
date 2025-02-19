@@ -1,15 +1,12 @@
 package com.netty;
 
-import com.market.data.Translator;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
-import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
-import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
-import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslHandler;
 import org.apache.logging.log4j.LogManager;
@@ -21,14 +18,13 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
     private static final Logger logger = LogManager.getLogger(WebSocketInitializer.class);
     private final URI uri;
     private final NettyWebSocketClient client;
+    private final  SimpleChannelInboundHandler<WebSocketFrame>  webSocketHandler;
 
-    private final Translator translator;
 
-
-    public WebSocketInitializer(URI uri, NettyWebSocketClient client, Translator translator) {
+    public WebSocketInitializer(URI uri, NettyWebSocketClient client, SimpleChannelInboundHandler<WebSocketFrame> handler) {
         this.uri = uri;
         this.client = client;
-        this.translator = translator;
+        this.webSocketHandler = handler;
     }
 
     @Override
@@ -57,6 +53,6 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
 
         logger.debug("Adding WebSocket protocol handler and Binance handler to pipeline");
         pipeline.addLast(new WebSocketClientProtocolHandler(handshaker));
-        pipeline.addLast(new WebSocketHandler(translator, 4096));
+        pipeline.addLast(webSocketHandler);
     }
 }

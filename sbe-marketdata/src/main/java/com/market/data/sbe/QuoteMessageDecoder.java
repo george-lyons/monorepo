@@ -10,7 +10,7 @@ import org.agrona.DirectBuffer;
 @SuppressWarnings("all")
 public final class QuoteMessageDecoder
 {
-    public static final int BLOCK_LENGTH = 37;
+    public static final int BLOCK_LENGTH = 45;
     public static final int TEMPLATE_ID = 1;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 1;
@@ -139,27 +139,27 @@ public final class QuoteMessageDecoder
         this.limit = limit;
     }
 
-    public static int timestampId()
+    public static int exchangeTimestampNanosId()
     {
         return 1;
     }
 
-    public static int timestampSinceVersion()
+    public static int exchangeTimestampNanosSinceVersion()
     {
         return 0;
     }
 
-    public static int timestampEncodingOffset()
+    public static int exchangeTimestampNanosEncodingOffset()
     {
         return 0;
     }
 
-    public static int timestampEncodingLength()
+    public static int exchangeTimestampNanosEncodingLength()
     {
         return 8;
     }
 
-    public static String timestampMetaAttribute(final MetaAttribute metaAttribute)
+    public static String exchangeTimestampNanosMetaAttribute(final MetaAttribute metaAttribute)
     {
         if (MetaAttribute.PRESENCE == metaAttribute)
         {
@@ -169,30 +169,81 @@ public final class QuoteMessageDecoder
         return "";
     }
 
-    public static long timestampNullValue()
+    public static long exchangeTimestampNanosNullValue()
     {
         return 0xffffffffffffffffL;
     }
 
-    public static long timestampMinValue()
+    public static long exchangeTimestampNanosMinValue()
     {
         return 0x0L;
     }
 
-    public static long timestampMaxValue()
+    public static long exchangeTimestampNanosMaxValue()
     {
         return 0xfffffffffffffffeL;
     }
 
-    public long timestamp()
+    public long exchangeTimestampNanos()
     {
         return buffer.getLong(offset + 0, java.nio.ByteOrder.LITTLE_ENDIAN);
     }
 
 
-    public static int symbolId()
+    public static int receivedTimestampNanosId()
     {
         return 2;
+    }
+
+    public static int receivedTimestampNanosSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int receivedTimestampNanosEncodingOffset()
+    {
+        return 8;
+    }
+
+    public static int receivedTimestampNanosEncodingLength()
+    {
+        return 8;
+    }
+
+    public static String receivedTimestampNanosMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        if (MetaAttribute.PRESENCE == metaAttribute)
+        {
+            return "required";
+        }
+
+        return "";
+    }
+
+    public static long receivedTimestampNanosNullValue()
+    {
+        return 0xffffffffffffffffL;
+    }
+
+    public static long receivedTimestampNanosMinValue()
+    {
+        return 0x0L;
+    }
+
+    public static long receivedTimestampNanosMaxValue()
+    {
+        return 0xfffffffffffffffeL;
+    }
+
+    public long receivedTimestampNanos()
+    {
+        return buffer.getLong(offset + 8, java.nio.ByteOrder.LITTLE_ENDIAN);
+    }
+
+
+    public static int symbolId()
+    {
+        return 3;
     }
 
     public static int symbolSinceVersion()
@@ -202,7 +253,7 @@ public final class QuoteMessageDecoder
 
     public static int symbolEncodingOffset()
     {
-        return 8;
+        return 16;
     }
 
     public static int symbolEncodingLength()
@@ -248,7 +299,7 @@ public final class QuoteMessageDecoder
             throw new IndexOutOfBoundsException("index out of range: index=" + index);
         }
 
-        final int pos = offset + 8 + (index * 1);
+        final int pos = offset + 16 + (index * 1);
 
         return buffer.getByte(pos);
     }
@@ -267,7 +318,7 @@ public final class QuoteMessageDecoder
             throw new IndexOutOfBoundsException("Copy will go out of range: offset=" + dstOffset);
         }
 
-        buffer.getBytes(offset + 8, dst, dstOffset, length);
+        buffer.getBytes(offset + 16, dst, dstOffset, length);
 
         return length;
     }
@@ -275,7 +326,7 @@ public final class QuoteMessageDecoder
     public String symbol()
     {
         final byte[] dst = new byte[20];
-        buffer.getBytes(offset + 8, dst, 0, 20);
+        buffer.getBytes(offset + 16, dst, 0, 20);
 
         int end = 0;
         for (; end < 20 && dst[end] != 0; ++end);
@@ -288,7 +339,7 @@ public final class QuoteMessageDecoder
     {
         for (int i = 0; i < 20; ++i)
         {
-            final int c = buffer.getByte(offset + 8 + i) & 0xFF;
+            final int c = buffer.getByte(offset + 16 + i) & 0xFF;
             if (c == 0)
             {
                 return i;
@@ -310,7 +361,7 @@ public final class QuoteMessageDecoder
 
     public static int sequenceNumberId()
     {
-        return 3;
+        return 4;
     }
 
     public static int sequenceNumberSinceVersion()
@@ -320,7 +371,7 @@ public final class QuoteMessageDecoder
 
     public static int sequenceNumberEncodingOffset()
     {
-        return 28;
+        return 36;
     }
 
     public static int sequenceNumberEncodingLength()
@@ -355,13 +406,13 @@ public final class QuoteMessageDecoder
 
     public long sequenceNumber()
     {
-        return buffer.getLong(offset + 28, java.nio.ByteOrder.LITTLE_ENDIAN);
+        return buffer.getLong(offset + 36, java.nio.ByteOrder.LITTLE_ENDIAN);
     }
 
 
     public static int exchangeIdId()
     {
-        return 4;
+        return 5;
     }
 
     public static int exchangeIdSinceVersion()
@@ -371,7 +422,7 @@ public final class QuoteMessageDecoder
 
     public static int exchangeIdEncodingOffset()
     {
-        return 36;
+        return 44;
     }
 
     public static int exchangeIdEncodingLength()
@@ -406,7 +457,7 @@ public final class QuoteMessageDecoder
 
     public short exchangeId()
     {
-        return ((short)(buffer.getByte(offset + 36) & 0xFF));
+        return ((short)(buffer.getByte(offset + 44) & 0xFF));
     }
 
 
@@ -414,7 +465,7 @@ public final class QuoteMessageDecoder
 
     public static long bidLevelsDecoderId()
     {
-        return 5;
+        return 6;
     }
 
     public static int bidLevelsDecoderSinceVersion()
@@ -519,7 +570,7 @@ public final class QuoteMessageDecoder
 
         public static int priceId()
         {
-            return 6;
+            return 7;
         }
 
         public static int priceSinceVersion()
@@ -557,7 +608,7 @@ public final class QuoteMessageDecoder
 
         public static int quantityId()
         {
-            return 7;
+            return 8;
         }
 
         public static int quantitySinceVersion()
@@ -638,7 +689,7 @@ public final class QuoteMessageDecoder
 
     public static long askLevelsDecoderId()
     {
-        return 8;
+        return 9;
     }
 
     public static int askLevelsDecoderSinceVersion()
@@ -743,7 +794,7 @@ public final class QuoteMessageDecoder
 
         public static int priceId()
         {
-            return 9;
+            return 10;
         }
 
         public static int priceSinceVersion()
@@ -781,7 +832,7 @@ public final class QuoteMessageDecoder
 
         public static int quantityId()
         {
-            return 10;
+            return 11;
         }
 
         public static int quantitySinceVersion()
@@ -899,8 +950,11 @@ public final class QuoteMessageDecoder
         }
         builder.append(BLOCK_LENGTH);
         builder.append("):");
-        builder.append("timestamp=");
-        builder.append(this.timestamp());
+        builder.append("exchangeTimestampNanos=");
+        builder.append(this.exchangeTimestampNanos());
+        builder.append('|');
+        builder.append("receivedTimestampNanos=");
+        builder.append(this.receivedTimestampNanos());
         builder.append('|');
         builder.append("symbol=");
         for (int i = 0; i < symbolLength() && this.symbol(i) > 0; i++)

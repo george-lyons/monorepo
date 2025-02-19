@@ -1,0 +1,5 @@
+target/*
+!target/marketdata-1.0-SNAPSHOT.jar
+.git
+.gitignore
+README.md 

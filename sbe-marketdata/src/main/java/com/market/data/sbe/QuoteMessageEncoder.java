@@ -10,7 +10,7 @@ import org.agrona.MutableDirectBuffer;
 @SuppressWarnings("all")
 public final class QuoteMessageEncoder
 {
-    public static final int BLOCK_LENGTH = 37;
+    public static final int BLOCK_LENGTH = 45;
     public static final int TEMPLATE_ID = 1;
     public static final int SCHEMA_ID = 1;
     public static final int SCHEMA_VERSION = 1;
@@ -104,27 +104,27 @@ public final class QuoteMessageEncoder
         this.limit = limit;
     }
 
-    public static int timestampId()
+    public static int exchangeTimestampNanosId()
     {
         return 1;
     }
 
-    public static int timestampSinceVersion()
+    public static int exchangeTimestampNanosSinceVersion()
     {
         return 0;
     }
 
-    public static int timestampEncodingOffset()
+    public static int exchangeTimestampNanosEncodingOffset()
     {
         return 0;
     }
 
-    public static int timestampEncodingLength()
+    public static int exchangeTimestampNanosEncodingLength()
     {
         return 8;
     }
 
-    public static String timestampMetaAttribute(final MetaAttribute metaAttribute)
+    public static String exchangeTimestampNanosMetaAttribute(final MetaAttribute metaAttribute)
     {
         if (MetaAttribute.PRESENCE == metaAttribute)
         {
@@ -134,31 +134,83 @@ public final class QuoteMessageEncoder
         return "";
     }
 
-    public static long timestampNullValue()
+    public static long exchangeTimestampNanosNullValue()
     {
         return 0xffffffffffffffffL;
     }
 
-    public static long timestampMinValue()
+    public static long exchangeTimestampNanosMinValue()
     {
         return 0x0L;
     }
 
-    public static long timestampMaxValue()
+    public static long exchangeTimestampNanosMaxValue()
     {
         return 0xfffffffffffffffeL;
     }
 
-    public QuoteMessageEncoder timestamp(final long value)
+    public QuoteMessageEncoder exchangeTimestampNanos(final long value)
     {
         buffer.putLong(offset + 0, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
     }
 
 
-    public static int symbolId()
+    public static int receivedTimestampNanosId()
     {
         return 2;
+    }
+
+    public static int receivedTimestampNanosSinceVersion()
+    {
+        return 0;
+    }
+
+    public static int receivedTimestampNanosEncodingOffset()
+    {
+        return 8;
+    }
+
+    public static int receivedTimestampNanosEncodingLength()
+    {
+        return 8;
+    }
+
+    public static String receivedTimestampNanosMetaAttribute(final MetaAttribute metaAttribute)
+    {
+        if (MetaAttribute.PRESENCE == metaAttribute)
+        {
+            return "required";
+        }
+
+        return "";
+    }
+
+    public static long receivedTimestampNanosNullValue()
+    {
+        return 0xffffffffffffffffL;
+    }
+
+    public static long receivedTimestampNanosMinValue()
+    {
+        return 0x0L;
+    }
+
+    public static long receivedTimestampNanosMaxValue()
+    {
+        return 0xfffffffffffffffeL;
+    }
+
+    public QuoteMessageEncoder receivedTimestampNanos(final long value)
+    {
+        buffer.putLong(offset + 8, value, java.nio.ByteOrder.LITTLE_ENDIAN);
+        return this;
+    }
+
+
+    public static int symbolId()
+    {
+        return 3;
     }
 
     public static int symbolSinceVersion()
@@ -168,7 +220,7 @@ public final class QuoteMessageEncoder
 
     public static int symbolEncodingOffset()
     {
-        return 8;
+        return 16;
     }
 
     public static int symbolEncodingLength()
@@ -214,7 +266,7 @@ public final class QuoteMessageEncoder
             throw new IndexOutOfBoundsException("index out of range: index=" + index);
         }
 
-        final int pos = offset + 8 + (index * 1);
+        final int pos = offset + 16 + (index * 1);
         buffer.putByte(pos, value);
 
         return this;
@@ -233,7 +285,7 @@ public final class QuoteMessageEncoder
             throw new IndexOutOfBoundsException("Copy will go out of range: offset=" + srcOffset);
         }
 
-        buffer.putBytes(offset + 8, src, srcOffset, length);
+        buffer.putBytes(offset + 16, src, srcOffset, length);
 
         return this;
     }
@@ -247,11 +299,11 @@ public final class QuoteMessageEncoder
             throw new IndexOutOfBoundsException("String too large for copy: byte length=" + srcLength);
         }
 
-        buffer.putStringWithoutLengthAscii(offset + 8, src);
+        buffer.putStringWithoutLengthAscii(offset + 16, src);
 
         for (int start = srcLength; start < length; ++start)
         {
-            buffer.putByte(offset + 8 + start, (byte)0);
+            buffer.putByte(offset + 16 + start, (byte)0);
         }
 
         return this;
@@ -266,11 +318,11 @@ public final class QuoteMessageEncoder
             throw new IndexOutOfBoundsException("CharSequence too large for copy: byte length=" + srcLength);
         }
 
-        buffer.putStringWithoutLengthAscii(offset + 8, src);
+        buffer.putStringWithoutLengthAscii(offset + 16, src);
 
         for (int start = srcLength; start < length; ++start)
         {
-            buffer.putByte(offset + 8 + start, (byte)0);
+            buffer.putByte(offset + 16 + start, (byte)0);
         }
 
         return this;
@@ -278,7 +330,7 @@ public final class QuoteMessageEncoder
 
     public static int sequenceNumberId()
     {
-        return 3;
+        return 4;
     }
 
     public static int sequenceNumberSinceVersion()
@@ -288,7 +340,7 @@ public final class QuoteMessageEncoder
 
     public static int sequenceNumberEncodingOffset()
     {
-        return 28;
+        return 36;
     }
 
     public static int sequenceNumberEncodingLength()
@@ -323,14 +375,14 @@ public final class QuoteMessageEncoder
 
     public QuoteMessageEncoder sequenceNumber(final long value)
     {
-        buffer.putLong(offset + 28, value, java.nio.ByteOrder.LITTLE_ENDIAN);
+        buffer.putLong(offset + 36, value, java.nio.ByteOrder.LITTLE_ENDIAN);
         return this;
     }
 
 
     public static int exchangeIdId()
     {
-        return 4;
+        return 5;
     }
 
     public static int exchangeIdSinceVersion()
@@ -340,7 +392,7 @@ public final class QuoteMessageEncoder
 
     public static int exchangeIdEncodingOffset()
     {
-        return 36;
+        return 44;
     }
 
     public static int exchangeIdEncodingLength()
@@ -375,7 +427,7 @@ public final class QuoteMessageEncoder
 
     public QuoteMessageEncoder exchangeId(final short value)
     {
-        buffer.putByte(offset + 36, (byte)value);
+        buffer.putByte(offset + 44, (byte)value);
         return this;
     }
 
@@ -384,7 +436,7 @@ public final class QuoteMessageEncoder
 
     public static long bidLevelsId()
     {
-        return 5;
+        return 6;
     }
 
     public BidLevelsEncoder bidLevelsCount(final int count)
@@ -473,7 +525,7 @@ public final class QuoteMessageEncoder
 
         public static int priceId()
         {
-            return 6;
+            return 7;
         }
 
         public static int priceSinceVersion()
@@ -511,7 +563,7 @@ public final class QuoteMessageEncoder
 
         public static int quantityId()
         {
-            return 7;
+            return 8;
         }
 
         public static int quantitySinceVersion()
@@ -552,7 +604,7 @@ public final class QuoteMessageEncoder
 
     public static long askLevelsId()
     {
-        return 8;
+        return 9;
     }
 
     public AskLevelsEncoder askLevelsCount(final int count)
@@ -641,7 +693,7 @@ public final class QuoteMessageEncoder
 
         public static int priceId()
         {
-            return 9;
+            return 10;
         }
 
         public static int priceSinceVersion()
@@ -679,7 +731,7 @@ public final class QuoteMessageEncoder
 
         public static int quantityId()
         {
-            return 10;
+            return 11;
         }
 
         public static int quantitySinceVersion()

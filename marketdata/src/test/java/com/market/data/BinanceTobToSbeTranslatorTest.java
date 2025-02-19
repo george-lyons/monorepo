@@ -39,7 +39,7 @@ class BinanceTobToSbeTranslatorTest {
     @Test
     void shouldTranslateBookTickerMessage() {
         // When
-        DirectBuffer result = translator.translate(sourceBuffer, 0, sourceBuffer.capacity());
+        DirectBuffer result = translator.translate(sourceBuffer, 0, sourceBuffer.capacity(), 1001L);
 
         // Then
         assertNotNull(result);
@@ -57,7 +57,8 @@ class BinanceTobToSbeTranslatorTest {
         assertEquals(400900217, quoteDecoder.sequenceNumber());
         assertEquals("BTCUSDT", quoteDecoder.symbol());
         assertEquals(1, quoteDecoder.exchangeId()); // BINANCE
-        assertTrue(quoteDecoder.timestamp() > 0);
+        assertEquals(1001L, quoteDecoder.exchangeTimestampNanos());
+        assertEquals(1001L, quoteDecoder.exchangeTimestampNanos());
 
         // Verify bid
         QuoteMessageDecoder.BidLevelsDecoder bidLevels = quoteDecoder.bidLevels();
@@ -87,7 +88,7 @@ class BinanceTobToSbeTranslatorTest {
         sourceBuffer.wrap(invalidJson);
 
         // When
-        DirectBuffer result = translator.translate(sourceBuffer, 0, sourceBuffer.capacity());
+        DirectBuffer result = translator.translate(sourceBuffer, 0, sourceBuffer.capacity(), 1001L);
 
         // Then
         assertNull(result);
@@ -105,7 +106,7 @@ class BinanceTobToSbeTranslatorTest {
         sourceBuffer.wrap(incompleteJson.getBytes(StandardCharsets.UTF_8));
 
         // When
-        DirectBuffer result = translator.translate(sourceBuffer, 0, sourceBuffer.capacity());
+        DirectBuffer result = translator.translate(sourceBuffer, 0, sourceBuffer.capacity(), 1001L);
 
         // Then
         assertNull(result);
@@ -126,7 +127,7 @@ class BinanceTobToSbeTranslatorTest {
         sourceBuffer.wrap(invalidNumberJson.getBytes(StandardCharsets.UTF_8));
 
         // When
-        DirectBuffer result = translator.translate(sourceBuffer, 0, sourceBuffer.capacity());
+        DirectBuffer result = translator.translate(sourceBuffer, 0, sourceBuffer.capacity(), 1001L);
 
         // Then
         assertNull(result);
@@ -142,7 +143,7 @@ class BinanceTobToSbeTranslatorTest {
         int length = BINANCE_BOOK_TICKER.length();
 
         // When
-        DirectBuffer result = translator.translate(sourceBuffer, offset, length);
+        DirectBuffer result = translator.translate(sourceBuffer, offset, length, 1001L);
 
         // Then
         assertNotNull(result);
@@ -173,7 +174,7 @@ class BinanceTobToSbeTranslatorTest {
         sourceBuffer.wrap(preciseJson.getBytes(StandardCharsets.UTF_8));
 
         // When
-        DirectBuffer result = translator.translate(sourceBuffer, 0, sourceBuffer.capacity());
+        DirectBuffer result = translator.translate(sourceBuffer, 0, sourceBuffer.capacity(), 1001L);
 
         // Then
         assertNotNull(result);
@@ -227,4 +228,5 @@ class BinanceTobToSbeTranslatorTest {
         System.out.printf("Ask Qty: %f (mantissa=%d, exponent=%d)%n", 
             reconstructedAskQty, askQtyMantissa, askQtyExponent);
     }
+
 } 

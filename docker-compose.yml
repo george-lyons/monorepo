@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  marketdata:
+    build:
+      context: .
+      dockerfile: marketdata/Dockerfile
+    container_name: marketdata
+    ports:
+      - "8082:8080"
+    networks:
+      - market-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    extra_hosts:
+      - "stream.binance.com:13.248.161.169"  # Add Binance WebSocket host
+    environment:
+      - JAVA_OPTS=-Dwebsocket.url=wss://stream.binance.com:9443/ws
+
+  prometheus:
+    build:
+      context: .
+      dockerfile: prometheus/Dockerfile
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - market-net
+    depends_on:
+      - marketdata
+
+networks:
+  market-net:
+    driver: bridge 

@@ -1,0 +1,15 @@
+version: "3"
+services:
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"  # Prometheus web UI port
+      - "8081:8081"  # Metrics server port
+    volumes:
+      - /Users/georgelyons/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml  # Mount the Prometheus YAML file
+    networks:
+      - monitor
+
+networks:
+  monitor:
+    driver: bridge

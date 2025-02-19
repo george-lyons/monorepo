@@ -1,5 +1,8 @@
 package com.netty;
 
+import com.lion.clock.SystemClock;
+import com.market.data.Translator;
+import com.netty.handler.WebSocketHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -8,6 +11,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import org.agrona.DirectBuffer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -17,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.*;
 
-class NettyWebSocketClientTest {
+class NettyWebSocketConfiguration2Test {
 
     @Mock private EventLoopGroup eventLoopGroup;
     @Mock private Bootstrap bootstrap;
@@ -44,7 +48,17 @@ class NettyWebSocketClientTest {
         when(channel.isActive()).thenReturn(true);
 
         // Inject mocked Bootstrap into the client
-        client = new NettyWebSocketClient(name, url, eventLoopGroup, bootstrap, headers);
+        client = new NettyWebSocketClient(name, url, eventLoopGroup, bootstrap, headers, new WebSocketHandler(new SystemClock(), new Translator() {
+            @Override
+            public DirectBuffer translate(DirectBuffer sourceBuffer, int offset, int length, long receivedNanoTime) {
+                return null;
+            }
+
+            @Override
+            public int getEncodedLength() {
+                return 0;
+            }
+        }, 4096));
     }
 
     @Test

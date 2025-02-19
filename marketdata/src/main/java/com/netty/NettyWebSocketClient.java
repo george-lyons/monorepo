@@ -1,14 +1,11 @@
 package com.netty;
 
-import com.market.data.Translator;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,17 +20,17 @@ public class NettyWebSocketClient {
     private final Bootstrap bootstrap;
     private final HttpHeaders headers;
 
-    private final Translator translator;
     private Channel channel;
 
+    private SimpleChannelInboundHandler<WebSocketFrame> webSocketHandler;
 
-    public NettyWebSocketClient(String name, String url, EventLoopGroup group, Bootstrap bootstrap, HttpHeaders headers, Translator translator) {
+    public NettyWebSocketClient(String name, String url, EventLoopGroup group, Bootstrap bootstrap, HttpHeaders headers, SimpleChannelInboundHandler<WebSocketFrame> webSocketHandler) {
         this.name = name;
         this.url = url;
         this.group = group;
         this.bootstrap = bootstrap;
         this.headers = headers;
-        this.translator = translator;
+        this.webSocketHandler = webSocketHandler;
     }
 
     public void connect() {
@@ -47,7 +44,7 @@ public class NettyWebSocketClient {
 
             bootstrap.group(group)
                     .channel(NioSocketChannel.class)
-                    .handler(new WebSocketInitializer(uri, this, translator));
+                    .handler(new WebSocketInitializer(uri, this, webSocketHandler));
 
 
             logger.info("[{}] 🔄 Initiating connection...", name);
@@ -90,5 +87,9 @@ public class NettyWebSocketClient {
 
     public HttpHeaders getHeaders() {
         return headers;
+    }
+
+    public String getUrl() {
+        return url;
     }
 }

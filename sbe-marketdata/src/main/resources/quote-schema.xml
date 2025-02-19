@@ -27,17 +27,19 @@
     </types>
 
     <sbe:message name="QuoteMessage" id="1" description="Market data quote">
-        <field name="timestamp" id="1" type="timestampNanos"/>
-        <field name="symbol" id="2" type="symbol"/>
-        <field name="sequenceNumber" id="3" type="uint64"/>
-        <field name="exchangeId" id="4" type="uint8" description="1=Binance, 2=Kraken, etc"/>
-        <group name="bidLevels" id="5" dimensionType="groupSizeEncoding">
-            <field name="price" id="6" type="decimal64"/>
-            <field name="quantity" id="7" type="decimal64"/>
+        <field name="exchangeTimestampNanos" id="1" type="timestampNanos"/>
+        <field name="receivedTimestampNanos" id="2" type="timestampNanos"/>
+
+        <field name="symbol" id="3" type="symbol"/>
+        <field name="sequenceNumber" id="4" type="uint64"/>
+        <field name="exchangeId" id="5" type="uint8" description="1=Binance, 2=Kraken, etc"/>
+        <group name="bidLevels" id="6" dimensionType="groupSizeEncoding">
+            <field name="price" id="7" type="decimal64"/>
+            <field name="quantity" id="8" type="decimal64"/>
         </group>
-        <group name="askLevels" id="8" dimensionType="groupSizeEncoding">
-            <field name="price" id="9" type="decimal64"/>
-            <field name="quantity" id="10" type="decimal64"/>
+        <group name="askLevels" id="9" dimensionType="groupSizeEncoding">
+            <field name="price" id="10" type="decimal64"/>
+            <field name="quantity" id="11" type="decimal64"/>
         </group>
     </sbe:message>
 
