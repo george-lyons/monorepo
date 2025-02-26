@@ -3,7 +3,7 @@
   <parent>
     <artifactId>monorepo</artifactId>
     <groupId>org.example</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <version>MONOREPO</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>docker</artifactId>

@@ -41,13 +41,31 @@ SHELL ["/bin/bash", "-c"]
 
 ## Set working directory
 #WORKDIR /app
+# Create app directory
+#RUN mkdir -p /app
 
 # Copy the JAR file
-COPY target/Marketdata-1.0-SNAPSHOT-jar-with-dependencies.jar app.jar
-COPY src/main/resources/log4j2.xml /app/log4j2.xml
+COPY target/Marketdata-MONOREPO-jar-with-dependencies.jar /app/var/app.jar
+COPY src/main/resources/log4j2.xml /app/etc/log4j2.xml
+COPY src/main/resources/app.sh /app/bin/app.sh
 
 # Expose ports (adjust as necessary)
 EXPOSE 8080 9443
 
+# Make script executable
+RUN chmod +x /app/bin/app.sh
+
+# Create logs directory
+RUN mkdir -p /app/logs
+
+# Set working directory
+WORKDIR /app
+CMD ["tail", "-f", "/dev/null"]
+
+
+# Use the script as entrypoint
+#ENTRYPOINT ["/app/bin/app.sh"]
+#CMD ["start"]
+
 # Correct entrypoint with JVM options in one string
-ENTRYPOINT java --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED -Dlog4j2.debug=true -Dlog4j.configurationFile=/app/log4j2.xml -jar /app.jar
+#ENTRYPOINT java --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED -Dlog4j2.debug=true -Dlog4j.configurationFile=/app/log4j2.xml -jar /app.jar

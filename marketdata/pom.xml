@@ -6,7 +6,7 @@
 
     <groupId>org.example</groupId>
     <artifactId>Marketdata</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>MONOREPO</version>
 
     <properties>
         <maven.compiler.source>20</maven.compiler.source>
@@ -17,6 +17,12 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>framework</artifactId>
+            <version>MONOREPO</version>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
@@ -86,12 +92,6 @@
 
     
 
-        <dependency>
-            <groupId>org.example</groupId>
-            <artifactId>framework</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
         <dependency>
             <groupId>org.example</groupId>
             <artifactId>aeron</artifactId>

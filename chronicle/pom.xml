@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.example</groupId>
         <artifactId>monorepo</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>MONOREPO</version>
     </parent>
     <artifactId>chronicle</artifactId>
     <name>Archetype - chronicle</name>

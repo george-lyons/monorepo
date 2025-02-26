@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.example</groupId>
     <artifactId>monorepo</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>MONOREPO</version>
     <packaging>pom</packaging>
     <name>Archetype - monorepo</name>
     <url>http://maven.apache.org</url>
@@ -11,9 +11,11 @@
     <modules>
         <module>framework</module>
         <module>aeron-examples</module>
+        <module>aeron-media-driver</module>
         <module>aeron</module>
         <module>sbe-marketdata</module>
         <module>chronicle</module>
+        <module>execution-service</module>
         <module>zookeeper</module>
         <module>marketdata</module>
         <module>prometheus</module>

@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  aeron-driver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aeron-driver
+    volumes:
+      - /dev/shm:/dev/shm
+    network_mode: "host" 

@@ -1,5 +1,7 @@
 package com.bootstrap;
 
+import com.aeron.config.AeronConfiguration;
+import com.aeron.message.AeronMessagePublisher;
 import com.lion.clock.Clock;
 import com.lion.clock.SystemClock;
 import com.lion.config.ConfigLoader;
@@ -32,7 +34,7 @@ public class AppBootstrap {
                 .addHeader(HttpHeaderNames.HOST, "stream.binance.com")
                 .addHeader(HttpHeaderNames.ORIGIN, "https://stream.binance.com")
                 .addHeader(HttpHeaderNames.USER_AGENT, "netty-websocket-client")
-                .handler(new WebSocketHandler(clock, new BinanceTobToSbeTranslator(4096), 4096))
+                .handler(new WebSocketHandler(clock, new BinanceTobToSbeTranslator(4096), 4096, new AeronMessagePublisher<>(AeronConfiguration.createDefault())))
                 .build();
 
         final WebSocketManager webSocketManager = new WebSocketManager();

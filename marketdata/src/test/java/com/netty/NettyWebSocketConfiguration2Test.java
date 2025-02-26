@@ -58,7 +58,10 @@ class NettyWebSocketConfiguration2Test {
             public int getEncodedLength() {
                 return 0;
             }
-        }, 4096));
+
+        }, 4096, (msgType, directBuffer, offset, length) -> {
+
+        }));
     }
 
     @Test

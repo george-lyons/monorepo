@@ -2,19 +2,19 @@ package com.lion.message;
 
 import org.agrona.collections.Int2ObjectHashMap;
 
-public enum MsgType implements IntIdentifier {
-    ORDER(1);
+public enum InternalMsgType implements IntIdentifier {
+    TOB_MARKET_DATA(1);
 
     private final int id;
 
-    MsgType(int id) {
+    InternalMsgType(int id) {
         this.id = id;
     }
 
-    private static final Int2ObjectHashMap<MsgType> int2ObjectHashMap = new Int2ObjectHashMap<>();
+    private static final Int2ObjectHashMap<InternalMsgType> int2ObjectHashMap = new Int2ObjectHashMap<>();
 
     static {
-        for (MsgType in : MsgType.values()) {
+        for (InternalMsgType in : InternalMsgType.values()) {
             int2ObjectHashMap.put(in.id, in);
         }
     }
@@ -24,7 +24,7 @@ public enum MsgType implements IntIdentifier {
         return id   ;
     }
 
-    public static MsgType fromId(int id) {
+    public static InternalMsgType fromId(int id) {
         if(int2ObjectHashMap.get(id) != null) {
             return int2ObjectHashMap.get(id);
         } else {

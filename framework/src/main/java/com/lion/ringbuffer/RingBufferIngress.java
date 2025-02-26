@@ -1,6 +1,7 @@
 package com.lion.ringbuffer;
 
-import com.lion.message.MsgType;
+import com.lion.message.IntIdentifier;
+import com.lion.message.InternalMsgType;
 import com.lion.message.publisher.IpcPublisher;
 import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
@@ -17,16 +18,16 @@ import java.nio.ByteBuffer;
 import java.util.EnumMap;
 
 
-public class RingBufferIngress implements Agent, MessageHandler, IpcPublisher {
+public class RingBufferIngress<T extends IntIdentifier> implements Agent, MessageHandler, IpcPublisher<T> {
    //Uses ReusableParameterizedMessageFactory to avoid creating temporary String objects.
     private static final Logger logger = LogManager.getLogger(RingBufferIngress.class, ReusableMessageFactory.INSTANCE);
 
     private RingBuffer ringBuffer;
     private final StringBuilder logAppender = new StringBuilder();
-    private final EnumMap<MsgType, IpcPublisher> mapToMessagePublisher;
+    private final EnumMap<InternalMsgType, IpcPublisher<InternalMsgType>> mapToMessagePublisher;
 
 
-    public RingBufferIngress(IdleStrategy idleStrategy, int ringBufferSize, EnumMap<MsgType, IpcPublisher> mapToMessagePublisher ) {
+    public RingBufferIngress(IdleStrategy idleStrategy, int ringBufferSize, EnumMap<InternalMsgType, IpcPublisher<InternalMsgType>> mapToMessagePublisher ) {
         final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ringBufferSize + RingBufferDescriptor.TRAILER_LENGTH);
         final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(byteBuffer);
         this.mapToMessagePublisher = mapToMessagePublisher;
@@ -58,19 +59,19 @@ public class RingBufferIngress implements Agent, MessageHandler, IpcPublisher {
     }
 
     @Override
-    public void onMessage(int messageType, MutableDirectBuffer mutableDirectBuffer, int offset, int length) {
-        final MsgType msgType = MsgType.fromId(messageType);
-        final IpcPublisher publisher = mapToMessagePublisher.get(msgType);
-
-        if(publisher != null) {
-            publisher.publish(messageType, mutableDirectBuffer, offset, length);
+    public void publish(T msgType, DirectBuffer directBuffer, int offset, int length) {
+        if (!ringBuffer.write(msgType.getId(), directBuffer, offset, length)) {
+            handleBackpressure(msgType.getId());
         }
     }
 
     @Override
-    public void publish(int msgType, DirectBuffer directBuffer, int offset, int length) {
-        if (!ringBuffer.write(msgType, directBuffer, offset, length)) {
-            handleBackpressure(msgType);
+    public void onMessage(int messageType, MutableDirectBuffer mutableDirectBuffer, int offset, int length) {
+        final InternalMsgType internalMsgType = InternalMsgType.fromId(messageType);
+        final IpcPublisher<InternalMsgType> publisher = mapToMessagePublisher.get(internalMsgType);
+
+        if(publisher != null) {
+            publisher.publish(internalMsgType, mutableDirectBuffer, offset, length);
         }
     }
 
@@ -79,4 +80,7 @@ public class RingBufferIngress implements Agent, MessageHandler, IpcPublisher {
         //for backpressure, write to chronicle queue
         logger.log(Level.WARN, "Dropping msg as was full");
     }
+
+
+
 }
