@@ -2,8 +2,9 @@ package com.aeron.ingress;
 
 
 import com.aeron.config.AeronConfiguration;
+import com.lion.app.Service;
 import com.lion.clock.Clock;
-import com.lion.message.InternalMsgType;
+import com.lion.message.FrameworkMsg;
 import com.lion.message.codecs.HeaderDecoder;
 import com.lion.message.publisher.ItcPublisher;
 import io.aeron.Aeron;
@@ -11,54 +12,69 @@ import io.aeron.Subscription;
 import io.aeron.logbuffer.FragmentHandler;
 import io.aeron.logbuffer.Header;
 import org.agrona.DirectBuffer;
+import org.agrona.ErrorHandler;
 import org.agrona.concurrent.Agent;
+import org.agrona.concurrent.AgentRunner;
 import org.agrona.concurrent.BackoffIdleStrategy;
 import org.agrona.concurrent.IdleStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 //TODO add callback onto a ringbuffer
-public class AeronSubsriberIngressAgent implements FragmentHandler, Agent {
+public class AeronSubsriberIngressAgent implements FragmentHandler, Agent, Service {
     private static final Logger logger = LoggerFactory.getLogger(AeronSubsriberIngressAgent.class);
 
-    private final Aeron aeron;
-    private final Subscription subscription;
-    private final StringBuilder container = new StringBuilder();
+    private Aeron aeron;
+    private Subscription subscription;
     private final IdleStrategy idleStrategy;
-    private final ItcPublisher<InternalMsgType> itcPublisher;
-    private static final long CONNECT_TIMEOUT_NS = 5_000_000_000L; // 5 seconds
+    private final ItcPublisher<FrameworkMsg> internalMsgTypeItcPublisher;
     private final HeaderDecoder headerDecoder = new HeaderDecoder();
 
-    public AeronSubsriberIngressAgent(AeronConfiguration config, Clock clock, ItcPublisher<InternalMsgType>  itcPublisher) {
+    private final AgentRunner runner;
+
+    private final Aeron.Context ctx;
+
+    private final AeronConfiguration aeronConfiguration;
+
+    public AeronSubsriberIngressAgent(AeronConfiguration config, Clock clock, ItcPublisher<FrameworkMsg> internalMsgTypeItcPublisher) {
         //TODO we should be able to have multiple channels ingress
         logger.info("Initializing Aeron Subscriber Ingress with config: {}", config);
         // Configure Aeron client
-        final Aeron.Context ctx = new Aeron.Context()
+        this.ctx = new Aeron.Context()
                 .aeronDirectoryName(config.getAeronDirectoryName());
-        this.itcPublisher = itcPublisher;
-        this.aeron = Aeron.connect(ctx);
-        this.subscription = aeron.addSubscription(config.getChannel(), config.getStreamId());
+        this.aeronConfiguration = config;
+        this.internalMsgTypeItcPublisher = internalMsgTypeItcPublisher;
         this.idleStrategy = new BackoffIdleStrategy(100, 10, 1, 1000);
-        waitForConnection();
+        final ErrorHandler errorHandler = throwable -> logger.error("Throwable", throwable);
+        this.runner = new AgentRunner(
+                idleStrategy,
+                errorHandler,
+                null,      // You can provide a human-readable name or "null"
+                this
+        );
     }
 
-    private void waitForConnection() {
-        long startTime = System.nanoTime();
-        while (!subscription.isConnected()) {
-            if (System.nanoTime() - startTime > CONNECT_TIMEOUT_NS) {
-                logger.warn("No subscriber detected. Continuing anyway...");
-                return; // Don't throw exception, just return
-            }
-            idleStrategy.idle(0);
+    @Override
+    public void start(){
+        logger.info("Starting Aeron ingress agent");
+        this.aeron = Aeron.connect(ctx);
+        this.subscription = aeron.addSubscription(aeronConfiguration.getChannel(), aeronConfiguration.getStreamId());
+        AgentRunner.startOnThread(runner);
+    }
+
+    @Override
+    public void stop() {
+        logger.info("Stopping Aeron ingress agent");
+        if (runner != null) {
+            runner.close(); // Gracefully stops the agent
         }
-        logger.info("Publication connected successfully");
     }
 
     @Override
     public void onFragment(DirectBuffer directBuffer, int offset, int length, Header header) {
         headerDecoder.wrap(directBuffer, offset);
-        InternalMsgType msgType = headerDecoder.messageType();
-        itcPublisher.publish(msgType, directBuffer, offset, length);
+        FrameworkMsg msgType = headerDecoder.messageType();
+        internalMsgTypeItcPublisher.publish(msgType, directBuffer, offset + headerDecoder.length(), length - headerDecoder.length());
     }
 
     @Override

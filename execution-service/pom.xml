@@ -49,6 +49,12 @@
             <version>MONOREPO</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>framework</artifactId>
+            <version>MONOREPO</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

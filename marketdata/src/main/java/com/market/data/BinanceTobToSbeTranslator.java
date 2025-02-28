@@ -8,6 +8,7 @@ import com.market.data.sbe.MessageHeaderEncoder;
 import com.market.data.sbe.QuoteMessageEncoder;
 import com.msg.ExchangeId;
 import org.agrona.DirectBuffer;
+import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -53,7 +54,7 @@ public class BinanceTobToSbeTranslator implements Translator {
     }
 
     @Override
-    public DirectBuffer translate(DirectBuffer sourceBuffer, int offset, int length, long receivedNanoTime) {
+    public MutableDirectBuffer translate(DirectBuffer sourceBuffer, int offset, int length, long receivedNanoTime) {
         double bidPrice = 0;
         double offerPrice= 0;
         double bidQty = 0;

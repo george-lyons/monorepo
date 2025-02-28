@@ -2,16 +2,22 @@ package com.aeron.message;
 
 import com.aeron.config.AeronConfiguration;
 import com.lion.message.IntIdentifier;
+import com.lion.message.codecs.HeaderEncoder;
 import com.lion.message.publisher.IpcPublisher;
 import io.aeron.Aeron;
 import io.aeron.Publication;
 import org.agrona.DirectBuffer;
+import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.BackoffIdleStrategy;
 import org.agrona.concurrent.IdleStrategy;
+import org.agrona.concurrent.UnsafeBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * add header and send message
+ * @param <T>
+ */
 public final class AeronMessagePublisher<T extends IntIdentifier> implements IpcPublisher<T>, AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(AeronMessagePublisher.class);
     private final Aeron aeron;
@@ -19,6 +25,9 @@ public final class AeronMessagePublisher<T extends IntIdentifier> implements Ipc
     private final StringBuilder container = new StringBuilder();
     private final IdleStrategy idleStrategy;
     private static final long CONNECT_TIMEOUT_NS = 5_000_000_000L; // 5 seconds
+    private final HeaderEncoder headerEncoder = new HeaderEncoder();
+
+    private final MutableDirectBuffer encodeBuffer = new UnsafeBuffer(new byte[4096]);
 
     public AeronMessagePublisher(AeronConfiguration config) {
         logger.info("Initializing Aeron publisher with config: {}", config);
@@ -49,7 +58,11 @@ public final class AeronMessagePublisher<T extends IntIdentifier> implements Ipc
 
     @Override
     public void publish(T msgType, DirectBuffer directBuffer, int offset, int length) {
-        final long result = publication.offer(directBuffer, 0, length);
+        headerEncoder.wrap(encodeBuffer, 0);
+        headerEncoder.messageLength(length);
+        headerEncoder.messageType(msgType.getId());
+        encodeBuffer.putBytes(HeaderEncoder.HEADER_LENGTH, directBuffer, offset, length);
+        final long result = publication.offer(encodeBuffer, 0, HeaderEncoder.HEADER_LENGTH + length);
 
         if (result > 0) {
             logger.debug("Published message on channel {}", container);

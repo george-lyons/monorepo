@@ -1,6 +1,6 @@
 package com.lion.message.codecs;
 
-import com.lion.message.InternalMsgType;
+import com.lion.message.FrameworkMsg;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 
@@ -24,13 +24,19 @@ public class HeaderEncoder {
         buffer.putInt(offset, length);
     }
 
-    public void messageType(InternalMsgType messageType) {
+    public void messageType(int msgType) {
+        buffer.putInt(offset + 4, msgType);
+    }
+
+    public void messageType(FrameworkMsg messageType) {
         buffer.putInt(offset + 4, messageType.getId());
     }
 
     public void receiveTimestampNanos(long receiveTimestampNanos) {
         buffer.putLong(offset + 8, receiveTimestampNanos);
     }
+
+    //TODO seq num
 
     public int length() {
         return HEADER_LENGTH;

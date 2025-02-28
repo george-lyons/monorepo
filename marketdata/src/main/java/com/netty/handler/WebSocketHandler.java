@@ -2,7 +2,8 @@ package com.netty.handler;
 
 import com.lion.clock.Clock;
 import com.lion.message.ByteCharSequence;
-import com.lion.message.InternalMsgType;
+import com.lion.message.FrameworkMsg;
+import com.lion.message.codecs.HeaderEncoder;
 import com.lion.message.publisher.IpcPublisher;
 import com.market.data.Translator;
 import io.netty.buffer.ByteBuf;
@@ -23,20 +24,19 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<WebSocketFrame
     private final Translator translator;
     private final UnsafeBuffer messageBuffer;
     private final byte[] readBuffer;
-
     private final Clock clock;
-
-    private final IpcPublisher<InternalMsgType> publisher;
-
-
+    private final IpcPublisher<FrameworkMsg> publisher;
     private final ByteCharSequence jsonMsg = new ByteCharSequence();
 
-    public WebSocketHandler(Clock clock, Translator translator, int bufferSize, IpcPublisher<InternalMsgType> ipcPublisher) {
+    private final HeaderEncoder headerEncoder = new HeaderEncoder();
+
+    public WebSocketHandler(Clock clock, Translator translator, int bufferSize, IpcPublisher<FrameworkMsg> ipcPublisher) {
         this.clock = clock;
         this.publisher = ipcPublisher;
         this.translator = translator;
         this.messageBuffer = new UnsafeBuffer(new byte[bufferSize]);
         this.readBuffer = new byte[bufferSize];
+        headerEncoder.wrap(messageBuffer, 0);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<WebSocketFrame
             // Translate to SBE format
             final DirectBuffer sbeBuffer = translator.translate(messageBuffer, 0, length, receivedNanoTime);
 
-            publisher.publish(InternalMsgType.TOB_MARKET_DATA, sbeBuffer, 0, translator.getEncodedLength());
+            publisher.publish(FrameworkMsg.TOB_MARKET_DATA, sbeBuffer, 0, translator.getEncodedLength());
 
             if (sbeBuffer != null) {
                 logger.debug("Translated message length: {}", translator.getEncodedLength());

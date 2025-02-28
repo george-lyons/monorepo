@@ -4,7 +4,7 @@ FROM eclipse-temurin:20-jdk
 RUN mkdir -p /app/logs
 
 # Copy application files
-COPY target/aeron-media-driver-1.0-SNAPSHOT-jar-with-dependencies.jar /app/app.jar
+COPY target/aeron-media-driver-1.0-SNAPSHOT-jar-with-dependencies.jar /app/var/aeron-media-driver.jar
 COPY src/main/resources/app.sh /app/app.sh
 
 # Make script executable

@@ -12,6 +12,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.agrona.DirectBuffer;
+import org.agrona.MutableDirectBuffer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -50,7 +51,7 @@ class NettyWebSocketConfiguration2Test {
         // Inject mocked Bootstrap into the client
         client = new NettyWebSocketClient(name, url, 1, eventLoopGroup, bootstrap, headers, new WebSocketHandler(new SystemClock(), new Translator() {
             @Override
-            public DirectBuffer translate(DirectBuffer sourceBuffer, int offset, int length, long receivedNanoTime) {
+            public MutableDirectBuffer translate(DirectBuffer sourceBuffer, int offset, int length, long receivedNanoTime) {
                 return null;
             }
 
