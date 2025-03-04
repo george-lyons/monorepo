@@ -6,9 +6,9 @@ import com.handler.QuoteEventHandlerLog;
 import com.lion.clock.Clock;
 import com.lion.clock.SystemClock;
 import com.lion.config.ConfigLoader;
-import com.lion.message.FrameworkMsg;
+import com.lion.message.GlobalMsgType;
 import com.lion.message.publisher.ItcPublisher;
-import com.lion.ringbuffer.LogicPipeline;
+import com.pipeline.ExecutionEngineLogicPipeline;
 import org.agrona.concurrent.BackoffIdleStrategy;
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.UnsafeBuffer;
@@ -27,9 +27,9 @@ public class ExecutionServiceBootstrap {
         final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(byteBuffer);
         final RingBuffer ingressRingBuffer = new OneToOneRingBuffer(unsafeBuffer);
         final IdleStrategy ingressIdleStrategy = new BackoffIdleStrategy();
-        final EnumMap<FrameworkMsg, ItcPublisher<FrameworkMsg>> messagePublishers = new EnumMap<>(FrameworkMsg.class);
-        messagePublishers.put(FrameworkMsg.TOB_MARKET_DATA, new QuoteEventHandlerLog());
-        final LogicPipeline<FrameworkMsg> logicPipeline = new LogicPipeline<>(ingressIdleStrategy, ingressRingBuffer, messagePublishers);
+        final EnumMap<GlobalMsgType, ItcPublisher<GlobalMsgType>> messagePublishers = new EnumMap<>(GlobalMsgType.class);
+        messagePublishers.put(GlobalMsgType.TOB_MARKET_DATA, new QuoteEventHandlerLog());
+        final ExecutionEngineLogicPipeline<GlobalMsgType> logicPipeline = new ExecutionEngineLogicPipeline<>(ingressIdleStrategy, ingressRingBuffer, messagePublishers);
         final AeronConfiguration aeronConfiguration = new AeronConfiguration.Builder()
                 .aeronDirectoryName("/tmp/logs/aeron")
                 .channel("aeron:ipc")

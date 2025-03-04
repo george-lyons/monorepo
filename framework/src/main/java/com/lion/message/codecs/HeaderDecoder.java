@@ -1,6 +1,6 @@
 package com.lion.message.codecs;
 
-import com.lion.message.FrameworkMsg;
+import com.lion.message.GlobalMsgType;
 import org.agrona.DirectBuffer;
 
 public class HeaderDecoder {
@@ -23,8 +23,8 @@ public class HeaderDecoder {
         return HeaderDecoder.HEADER_LENGTH;
     }
 
-    public FrameworkMsg messageType() {
-        return FrameworkMsg.fromId(buffer.getInt(offset + 4));
+    public GlobalMsgType messageType() {
+        return GlobalMsgType.fromId(buffer.getInt(offset + 4));
     }
 
     public long receiveTimestampNanos() {

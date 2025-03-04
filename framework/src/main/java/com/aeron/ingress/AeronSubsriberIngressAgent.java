@@ -4,7 +4,7 @@ package com.aeron.ingress;
 import com.aeron.config.AeronConfiguration;
 import com.lion.app.Service;
 import com.lion.clock.Clock;
-import com.lion.message.FrameworkMsg;
+import com.lion.message.GlobalMsgType;
 import com.lion.message.codecs.HeaderDecoder;
 import com.lion.message.publisher.ItcPublisher;
 import io.aeron.Aeron;
@@ -23,11 +23,10 @@ import org.slf4j.LoggerFactory;
 //TODO add callback onto a ringbuffer
 public class AeronSubsriberIngressAgent implements FragmentHandler, Agent, Service {
     private static final Logger logger = LoggerFactory.getLogger(AeronSubsriberIngressAgent.class);
-
     private Aeron aeron;
     private Subscription subscription;
     private final IdleStrategy idleStrategy;
-    private final ItcPublisher<FrameworkMsg> internalMsgTypeItcPublisher;
+    private final ItcPublisher<GlobalMsgType> internalMsgTypeItcPublisher;
     private final HeaderDecoder headerDecoder = new HeaderDecoder();
 
     private final AgentRunner runner;
@@ -36,7 +35,7 @@ public class AeronSubsriberIngressAgent implements FragmentHandler, Agent, Servi
 
     private final AeronConfiguration aeronConfiguration;
 
-    public AeronSubsriberIngressAgent(AeronConfiguration config, Clock clock, ItcPublisher<FrameworkMsg> internalMsgTypeItcPublisher) {
+    public AeronSubsriberIngressAgent(AeronConfiguration config, Clock clock, ItcPublisher<GlobalMsgType> internalMsgTypeItcPublisher) {
         //TODO we should be able to have multiple channels ingress
         logger.info("Initializing Aeron Subscriber Ingress with config: {}", config);
         // Configure Aeron client
@@ -73,7 +72,7 @@ public class AeronSubsriberIngressAgent implements FragmentHandler, Agent, Servi
     @Override
     public void onFragment(DirectBuffer directBuffer, int offset, int length, Header header) {
         headerDecoder.wrap(directBuffer, offset);
-        FrameworkMsg msgType = headerDecoder.messageType();
+        GlobalMsgType msgType = headerDecoder.messageType();
         internalMsgTypeItcPublisher.publish(msgType, directBuffer, offset + headerDecoder.length(), length - headerDecoder.length());
     }
 

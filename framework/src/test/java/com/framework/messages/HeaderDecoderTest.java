@@ -1,6 +1,6 @@
 package com.framework.messages;
 
-import com.lion.message.FrameworkMsg;
+import com.lion.message.GlobalMsgType;
 import com.lion.message.codecs.HeaderDecoder;
 import com.lion.message.codecs.HeaderEncoder;
 import org.agrona.concurrent.UnsafeBuffer;
@@ -48,13 +48,13 @@ class HeaderDecoderTest {
 
     @Test
     void shouldDecodeMessageType() {
-        encoder.wrap(buffer, 0).messageType(FrameworkMsg.TOB_MARKET_DATA);
+        encoder.wrap(buffer, 0).messageType(GlobalMsgType.TOB_MARKET_DATA);
 
         // When
         decoder.wrap(buffer, 0);
 
         // Then
-        assertEquals(FrameworkMsg.TOB_MARKET_DATA, decoder.messageType());
+        assertEquals(GlobalMsgType.TOB_MARKET_DATA, decoder.messageType());
     }
 
     @Test
@@ -63,14 +63,14 @@ class HeaderDecoderTest {
         int offset = 8;
         encoder.wrap(buffer, offset);
         encoder.messageLength(100);
-        encoder.messageType(FrameworkMsg.TOB_MARKET_DATA);
+        encoder.messageType(GlobalMsgType.TOB_MARKET_DATA);
 
         // When
         decoder.wrap(buffer, offset);
 
         // Then
         assertEquals(100, decoder.messageLength());
-        assertEquals(FrameworkMsg.TOB_MARKET_DATA, decoder.messageType());
+        assertEquals(GlobalMsgType.TOB_MARKET_DATA, decoder.messageType());
     }
 
     @Test
@@ -81,17 +81,17 @@ class HeaderDecoderTest {
 
         encoder.wrap(buffer, offset);
         encoder.messageLength(messageLength);
-        encoder.messageType(FrameworkMsg.TOB_MARKET_DATA);
+        encoder.messageType(GlobalMsgType.TOB_MARKET_DATA);
         encoder.receiveTimestampNanos(1000L);
 
         decoder.wrap(buffer, offset);
         // When
         int decodedLength = decoder.messageLength();
-        FrameworkMsg decodedType = decoder.messageType();
+        GlobalMsgType decodedType = decoder.messageType();
         long timestampNanos = decoder.receiveTimestampNanos();
         // Then
         assertEquals(messageLength, decodedLength);
-        assertEquals(FrameworkMsg.TOB_MARKET_DATA, decodedType);
+        assertEquals(GlobalMsgType.TOB_MARKET_DATA, decodedType);
         assertEquals(1000L, timestampNanos);
     }
 

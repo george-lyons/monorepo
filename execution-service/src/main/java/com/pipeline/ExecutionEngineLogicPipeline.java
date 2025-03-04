@@ -1,9 +1,12 @@
-package com.lion.ringbuffer;
+package com.pipeline;
 
 import com.lion.app.Service;
+import com.execution.ExecutionManager;
+import com.execution.ExecutionTask;
 import com.lion.message.IntIdentifier;
 import com.lion.message.GlobalMsgType;
 import com.lion.message.publisher.ItcPublisher;
+import com.msg.ExecutionEngineMsgType;
 import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
 import org.agrona.MutableDirectBuffer;
@@ -19,52 +22,47 @@ import org.apache.logging.log4j.message.ReusableMessageFactory;
 
 import java.util.EnumMap;
 
-
 /**
- * next steps - add execution register
- * add intergation tests can
+ * add execution
+ * first integration tests - MD to algo
+ * Add a heartbeat
+ * histogram on packet processing time - monitor in prometheus
  * @param <T>
  */
-public class LogicPipeline<T extends IntIdentifier> implements Agent, MessageHandler, ItcPublisher<T>, Service {
-    private static final Logger logger = LogManager.getLogger(LogicPipeline.class, ReusableMessageFactory.INSTANCE);
-    private RingBuffer ringBuffer;
-    private final StringBuilder logAppender = new StringBuilder();
-    private final EnumMap<GlobalMsgType, ItcPublisher<GlobalMsgType>> mapToMessagePublisher;
+public class ExecutionEngineLogicPipeline<T extends IntIdentifier> implements Agent, MessageHandler, ItcPublisher<T>, Service {
+    private static final Logger logger = LogManager.getLogger(ExecutionEngineLogicPipeline.class, ReusableMessageFactory.INSTANCE);
 
+    private final ExecutionManager executionManager;
+    private final RingBuffer ringBuffer;
+    private final EnumMap<GlobalMsgType, ItcPublisher<GlobalMsgType>> mapToMessagePublisher;
     private final AgentRunner runner;
 
-    public LogicPipeline(IdleStrategy idleStrategy, RingBuffer ringBuffer, EnumMap<GlobalMsgType, ItcPublisher<GlobalMsgType>> mapToMessagePublisher ) {
-        this.mapToMessagePublisher = mapToMessagePublisher;
+    public ExecutionEngineLogicPipeline(IdleStrategy idleStrategy, RingBuffer ringBuffer, EnumMap<GlobalMsgType, ItcPublisher<GlobalMsgType>> mapToMessagePublisher) {
+        this.executionManager = new ExecutionManager();
         this.ringBuffer = ringBuffer;
-        //todo timer service wheel - or even my own scheduler
+        this.mapToMessagePublisher = mapToMessagePublisher;
+
         final ErrorHandler errorHandler = throwable -> logger.error("Throwable", throwable);
-        this.runner = new AgentRunner(
-                idleStrategy,
-                errorHandler,
-                null,      // You can provide a human-readable name or "null"
-                this
-        );
+        this.runner = new AgentRunner(idleStrategy, errorHandler, null, this);
     }
 
     @Override
-    public void start(){
+    public void start() {
         logger.info("Starting ring buffer agent");
         AgentRunner.startOnThread(runner);
     }
+
     @Override
     public void stop() {
         logger.info("Stopping ring buffer agent");
         if (runner != null) {
-            runner.close(); // Gracefully stops the agent
+            runner.close();
         }
     }
 
     @Override
-    public int doWork() throws Exception {
-        int workDone = 0;
-        // Process pending messages
-        workDone += ringBuffer.read(this);
-        return workDone;
+    public int doWork() {
+        return ringBuffer.read(this);
     }
 
     @Override
@@ -72,11 +70,25 @@ public class LogicPipeline<T extends IntIdentifier> implements Agent, MessageHan
         return "T_BLP";
     }
 
+    /**
+     * Adds an execution task to handle specific message types.
+     *
+     * @param messageType the type of messages this execution should handle
+     * @param executionTask the execution task
+     */
+    public void addExecutionTask(ExecutionEngineMsgType messageType, ExecutionTask executionTask) {
+        executionManager.registerExecution(messageType, executionTask);
+    }
+
     @Override
     public void publish(T msgType, DirectBuffer directBuffer, int offset, int length) {
         if (!ringBuffer.write(msgType.getId(), directBuffer, offset, length)) {
             handleBackpressure(msgType.getId());
         }
+    }
+
+    public void registerExecution(ExecutionTask executionTask) {
+
     }
 
     @Override
@@ -90,11 +102,6 @@ public class LogicPipeline<T extends IntIdentifier> implements Agent, MessageHan
     }
 
     private void handleBackpressure(int msgType) {
-        //do nothing
-        //for backpressure, write to chronicle queue
         logger.log(Level.WARN, "Dropping msg as was full msgType {}", msgType);
     }
-
-
-
 }

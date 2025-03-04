@@ -1,6 +1,6 @@
 package com.lion.message.codecs;
 
-import com.lion.message.FrameworkMsg;
+import com.lion.message.GlobalMsgType;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 
@@ -28,7 +28,7 @@ public class HeaderEncoder {
         buffer.putInt(offset + 4, msgType);
     }
 
-    public void messageType(FrameworkMsg messageType) {
+    public void messageType(GlobalMsgType messageType) {
         buffer.putInt(offset + 4, messageType.getId());
     }
 
