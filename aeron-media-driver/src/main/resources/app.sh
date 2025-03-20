@@ -2,7 +2,7 @@
 
 # Configuration
 APP_NAME="aeron-media-driver"
-APP_JAR="aeron-media-driver-1.0-SNAPSHOT-jar-with-dependencies.jar"
+APP_JAR="/app/var/media_driver.jar"
 PID_FILE="/app/app.pid"
 LOG_FILE="/app/logs/app.log"
 
@@ -10,7 +10,10 @@ LOG_FILE="/app/logs/app.log"
 JVM_OPTS="-XX:+UnlockExperimentalVMOptions \
           -XX:+UseEpsilonGC \
           -XX:+AlwaysPreTouch \
-          -XX:+UseNUMA"
+          -XX:+UseNUMA \
+          --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED \
+          --add-opens=java.base/java.nio=ALL-UNNAMED \
+          -Dlog4j.configurationFile=/app/etc/log4j2.xml"
 
 # Function to check if app is running
 is_running() {
@@ -19,23 +22,10 @@ is_running() {
 
 # Function to start the app
 start() {
-    if is_running; then
-        echo "Application is already running."
-        return 1
-    fi
-    
     echo "Starting $APP_NAME..."
-    java $JVM_OPTS -jar $APP_JAR > $LOG_FILE 2>&1 &
-    echo $! > "$PID_FILE"
-    sleep 2
-    
-    if is_running; then
-        echo "$APP_NAME started successfully"
-    else
-        echo "Failed to start $APP_NAME"
-        rm -f "$PID_FILE"
-        return 1
-    fi
+    mkdir -p $(dirname "$LOG_FILE")
+
+    exec java $JVM_OPTS -jar $APP_JAR >> $LOG_FILE 2>&1
 }
 
 # Function to stop the app
@@ -48,21 +38,8 @@ stop() {
     echo "Stopping $APP_NAME..."
     kill $(cat "$PID_FILE")
     rm -f "$PID_FILE"
-    sleep 2
     
-    if ! is_running; then
-        echo "$APP_NAME stopped successfully"
-    else
-        echo "Failed to stop $APP_NAME"
-        return 1
-    fi
-}
-
-# Function to restart the app
-restart() {
-    stop
-    sleep 2
-    start
+    echo "$APP_NAME stopped"
 }
 
 # Function to show status
@@ -89,7 +66,8 @@ case "$1" in
         stop
         ;;
     restart)
-        restart
+        stop
+        start
         ;;
     status)
         status

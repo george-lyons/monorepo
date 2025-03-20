@@ -8,7 +8,8 @@ import java.util.Arrays;
 import java.util.EnumMap;
 
 public enum ExecutionEngineMsgType implements IntIdentifier {
-    TOB_MARKET_DATA (1, GlobalMsgType.TOB_MARKET_DATA);
+    TOB_MARKET_DATA (1, GlobalMsgType.TOB_MARKET_DATA),
+    QUOTE_STACK_EVENT_MARKET_DATA (1, GlobalMsgType.QUOTE_STACK_EVENT_MARKET_DATA);
 
     private static final EnumMap<GlobalMsgType, ExecutionEngineMsgType> globalToEngineMSgType = new EnumMap<>(GlobalMsgType.class);
     private static final Int2ObjectHashMap<ExecutionEngineMsgType> int2ObjectHashMap = new Int2ObjectHashMap<>();

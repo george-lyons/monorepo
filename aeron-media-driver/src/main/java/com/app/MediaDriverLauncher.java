@@ -6,6 +6,8 @@ import org.agrona.concurrent.ShutdownSignalBarrier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+
 public class MediaDriverLauncher {
     private static final Logger logger = LoggerFactory.getLogger(MediaDriverLauncher.class);
 
@@ -13,12 +15,18 @@ public class MediaDriverLauncher {
     public static void main(String[] args) {
         logger.info("Starting standalone Aeron Media Driver...");
 
+        // Check if the directory is already in use
+        File aeronDir = new File("/tmp/aeron/logs");
+        if (aeronDir.exists() && aeronDir.list().length > 0) {
+            logger.warn("Aeron directory is already in use: {}", aeronDir.getAbsolutePath());
+        }
+
         //TODO - Configure Media Driver for IPC - we need to inject this and have the configurations in a file
         final MediaDriver.Context ctx = new MediaDriver.Context()
                 .threadingMode(ThreadingMode.SHARED)
-                .dirDeleteOnStart(true)
-                .dirDeleteOnShutdown(true)
-                .aeronDirectoryName("/tmp/logs/aeron");
+                .dirDeleteOnStart(false) // Avoids deleting an in-use directory
+                .dirDeleteOnShutdown(false)
+                .aeronDirectoryName("/tmp/aeron/logs");
 
         try (MediaDriver driver = MediaDriver.launch(ctx)) {
             logger.info("Media Driver started, directory: {}", ctx.aeronDirectoryName());

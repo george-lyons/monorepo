@@ -12,7 +12,6 @@
         <module>framework</module>
         <module>aeron-examples</module>
         <module>aeron-media-driver</module>
-        <module>aeron</module>
         <module>sbe-marketdata</module>
         <module>chronicle</module>
         <module>execution-service</module>

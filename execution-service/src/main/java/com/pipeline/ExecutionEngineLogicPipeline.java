@@ -1,11 +1,12 @@
 package com.pipeline;
 
 import com.lion.app.Service;
-import com.execution.ExecutionManager;
 import com.execution.ExecutionTask;
 import com.lion.message.IntIdentifier;
 import com.lion.message.GlobalMsgType;
 import com.lion.message.publisher.ItcPublisher;
+import com.market.data.sbe.MessageHeaderDecoder;
+import com.market.data.sbe.QuoteMessageDecoder;
 import com.msg.ExecutionEngineMsgType;
 import org.agrona.DirectBuffer;
 import org.agrona.ErrorHandler;
@@ -20,25 +21,30 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ReusableMessageFactory;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 
 /**
  * add execution
  * first integration tests - MD to algo
  * Add a heartbeat
  * histogram on packet processing time - monitor in prometheus
+ * add a scheduler
+ * add equivalent of JVM metrics - that will work with prometheus
  * @param <T>
  */
 public class ExecutionEngineLogicPipeline<T extends IntIdentifier> implements Agent, MessageHandler, ItcPublisher<T>, Service {
     private static final Logger logger = LogManager.getLogger(ExecutionEngineLogicPipeline.class, ReusableMessageFactory.INSTANCE);
-
-    private final ExecutionManager executionManager;
     private final RingBuffer ringBuffer;
     private final EnumMap<GlobalMsgType, ItcPublisher<GlobalMsgType>> mapToMessagePublisher;
     private final AgentRunner runner;
+    private final EnumMap<ExecutionEngineMsgType, List<ExecutionTask>> executionTaskMap = new EnumMap<>(ExecutionEngineMsgType.class);
+
+    private final QuoteMessageDecoder quoteMessageDecoder = new QuoteMessageDecoder();
+    private final MessageHeaderDecoder messageHeaderDecoder = new MessageHeaderDecoder();
 
     public ExecutionEngineLogicPipeline(IdleStrategy idleStrategy, RingBuffer ringBuffer, EnumMap<GlobalMsgType, ItcPublisher<GlobalMsgType>> mapToMessagePublisher) {
-        this.executionManager = new ExecutionManager();
         this.ringBuffer = ringBuffer;
         this.mapToMessagePublisher = mapToMessagePublisher;
 
@@ -67,7 +73,7 @@ public class ExecutionEngineLogicPipeline<T extends IntIdentifier> implements Ag
 
     @Override
     public String roleName() {
-        return "T_BLP";
+        return "BLP";
     }
 
     /**
@@ -77,7 +83,7 @@ public class ExecutionEngineLogicPipeline<T extends IntIdentifier> implements Ag
      * @param executionTask the execution task
      */
     public void addExecutionTask(ExecutionEngineMsgType messageType, ExecutionTask executionTask) {
-        executionManager.registerExecution(messageType, executionTask);
+        executionTaskMap.computeIfAbsent(messageType, k -> new ArrayList<>()).add(executionTask);
     }
 
     @Override
@@ -87,17 +93,29 @@ public class ExecutionEngineLogicPipeline<T extends IntIdentifier> implements Ag
         }
     }
 
-    public void registerExecution(ExecutionTask executionTask) {
-
-    }
-
     @Override
     public void onMessage(int messageType, MutableDirectBuffer mutableDirectBuffer, int offset, int length) {
         final GlobalMsgType globalMsgType = GlobalMsgType.fromId(messageType);
-        final ItcPublisher<GlobalMsgType> publisher = mapToMessagePublisher.get(globalMsgType);
+        final ExecutionEngineMsgType executionEngineMsgType = ExecutionEngineMsgType.from(globalMsgType);
+        final List<ExecutionTask> tasks = executionTaskMap.get(executionEngineMsgType);
 
-        if(publisher != null) {
-            publisher.publish(globalMsgType, mutableDirectBuffer, offset, length);
+        //handle app mesaages if required
+        if(mapToMessagePublisher.containsKey(globalMsgType)) {
+            mapToMessagePublisher.get(globalMsgType).publish(globalMsgType, mutableDirectBuffer, offset, length);
+        }
+
+        if (tasks != null && !tasks.isEmpty()) {
+            for (ExecutionTask task : tasks) {
+                if (task.isAvailable()) {
+                    if(ExecutionEngineMsgType.TOB_MARKET_DATA.equals(executionEngineMsgType)) {
+                        //decode once here
+                        quoteMessageDecoder.wrapAndApplyHeader(mutableDirectBuffer, offset, messageHeaderDecoder);
+                        task.handleMarketData(executionEngineMsgType, quoteMessageDecoder);
+                    } else {
+                        logger.info("Not expected event, will implement more");
+                    }
+                }
+            }
         }
     }
 

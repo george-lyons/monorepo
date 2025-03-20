@@ -3,7 +3,8 @@ package com.lion.message;
 import org.agrona.collections.Int2ObjectHashMap;
 
 public enum GlobalMsgType implements IntIdentifier {
-    TOB_MARKET_DATA(1);
+    TOB_MARKET_DATA(1),
+    QUOTE_STACK_EVENT_MARKET_DATA(2);
 
     private final int id;
 

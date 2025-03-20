@@ -9,7 +9,7 @@ public class AeronConfiguration  {
     // Default values for IPC
     public static final String DEFAULT_IPC_CHANNEL = "aeron:ipc";
     public static final int DEFAULT_STREAM_ID = 1001;
-    public static final String DEFAULT_AERON_DIR = "/tmp/logs/aeron";
+    public static final String DEFAULT_AERON_DIR = "/tmp/aeron/logs";
 
     public AeronConfiguration(String channel, int streamId, String aeronDirectoryName) {
         this.channel = channel;

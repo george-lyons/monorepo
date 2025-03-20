@@ -1,34 +1,67 @@
 version: '3.8'
+
 services:
-  marketdata:
-    build:
-      context: .
-      dockerfile: marketdata/Dockerfile
-    container_name: marketdata
-    ports:
-      - "8082:8080"
-    networks:
-      - market-net
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    extra_hosts:
-      - "stream.binance.com:13.248.161.169"  # Add Binance WebSocket host
-    environment:
-      - JAVA_OPTS=-Dwebsocket.url=wss://stream.binance.com:9443/ws
+#  aeron-driver:
+#    build:
+#      context: ./aeron-media-driver
+#      dockerfile: Dockerfile
+#    container_name: aeron-driver
+#    volumes:
+#      - aeron_data:/tmp/aeron/logs  # Use a different directory
+#    network_mode: "host"  # ✅ Best for IPC performance
+#    ulimits:
+#      memlock: -1  # ✅ Prevents memory locking issues
+#    restart: unless-stopped
+#    healthcheck:
+#      test: ["CMD-SHELL", "pgrep -f 'media_driver.jar' > /dev/null 2>&1 && ls /tmp/aeron/logs | grep -q '.' || exit 1"]
+#      interval: 5s
+#      timeout: 3s
+#      retries: 3
 
-  prometheus:
+  aeron-driver:
     build:
-      context: .
-      dockerfile: prometheus/Dockerfile
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    networks:
-      - market-net
-    depends_on:
-      - marketdata
+      context: ./aeron-media-driver
+      dockerfile: Dockerfile
+    container_name: aeron-driver
+    volumes:
+      - aeron_data:/tmp/aeron/logs  # Use named volume instead of host mount
+    network_mode: "host"
+    ulimits:
+      memlock: -1
+    restart: unless-stopped
 
-networks:
-  market-net:
-    driver: bridge 
+#  marketdata:
+#    build:
+#      context: ./marketdata
+#      dockerfile: Dockerfile
+#    container_name: marketdata
+#    volumes:
+#      - aeron_data:/tmp/aeron/logs   # ✅ Same MMF for MarketData
+#    depends_on:
+#      aeron-driver:
+#        condition: service_healthy
+#    network_mode: "host"
+#    ulimits:
+#      memlock: -1
+#    restart: unless-stopped
+#
+#  execution-service:
+#    build:
+#      context: ./execution-service
+#      dockerfile: Dockerfile
+#    container_name: execution-service
+#    volumes:
+#      - aeron_data:/tmp/aeron/logs  # ✅ Same MMF for Execution Engine
+#    depends_on:
+#      aeron-driver:
+#        condition: service_healthy
+#      marketdata:
+#        condition: service_started
+#    network_mode: "host"
+#    ulimits:
+#      memlock: -1
+#    restart: unless-stopped
+
+volumes:
+  aeron_data:
+    driver: local

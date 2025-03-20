@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Configuration
-APP_NAME="marketdata"
-APP_JAR="/app/var/app.jar"
+APP_NAME="execution"
+APP_JAR="/app/var/execution-engine.jar"
 PID_FILE="/app/app.pid"
 LOG_FILE="/app/logs/app.log"
 
@@ -18,24 +18,12 @@ is_running() {
 }
 
 # Function to start the app
+# Function to start the app
 start() {
-    if is_running; then
-        echo "Application is already running."
-        return 1
-    fi
-
     echo "Starting $APP_NAME..."
-    nohup java $JVM_OPTS -jar $APP_JAR > $LOG_FILE 2>&1 &
+    java $JVM_OPTS -jar $APP_JAR >> $LOG_FILE 2>&1 &  # Background process
     echo $! > "$PID_FILE"
-    sleep 2
-    
-    if is_running; then
-        echo "$APP_NAME started successfully"
-    else
-        echo "Failed to start $APP_NAME"
-        rm -f "$PID_FILE"
-        return 1
-    fi
+    tail -f $LOG_FILE  # Keep container running
 }
 
 # Function to stop the app
